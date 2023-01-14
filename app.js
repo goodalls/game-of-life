@@ -1,7 +1,7 @@
 //x is horizontal y is vertical
 
-document.querySelector("canvas").height = innerHeight;
-document.querySelector("canvas").width = innerWidth;
+let height = (document.querySelector("canvas").height = innerHeight);
+let width = (document.querySelector("canvas").width = innerWidth);
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
 let objectArray = [];
@@ -11,12 +11,12 @@ function Cell(x, y, alive) {
   this.x = x;
   this.y = y;
   this.alive = alive === 1 ? true : false;
-  this.neighbor = 0;
+  this.nextAlive = NaN;
 }
 
 function createBoard() {
-  let width = c.width;
-  let height = c.height;
+  //   let width = c.width;
+  //   let height = c.height;
   let x = 0;
   let y = 0;
   for (let x = 0; x < width; x++) {
@@ -40,28 +40,13 @@ function square(x, y, alive) {
   ctx.stroke();
 }
 
-// function test(x, y) {
-//   const objectTest = [
-//     (x - 5, y),
-//     (x + 5, y),
-//     (x, y - 5),
-//     (x, y + 5),
-//     (x - 5, y + 5),
-//     (x - 5, y - 5),
-//     (x + 5, y + 5),
-//     (x + 5, y - 5),
-//   ];
-// };
-
 function checkSurrounding(object1) {
   let numAlive = 0;
   objectArray.forEach((object2) => {
     if (
-      object2.x < object1.x + 5 &&
-      object2.x > object1.x - 5 ||
-      object2.y < object1.y + 5 &&
-      object2.y > object1.y - 5 &&
-      object1 != object2
+      (object2.x < object1.x + 5 && object2.x > object1.x - 5) ||
+      (object2.y < object1.y + 5 && object2.y > object1.y - 5) &&
+        object1 != object2
     ) {
       if (object2.alive === true) {
         numAlive++;
@@ -70,8 +55,44 @@ function checkSurrounding(object1) {
   });
   console.log(numAlive);
   if (numAlive === 2 || numAlive === 3) {
-    object1.alive = true;
+    object1.nextAlive = true;
   } else {
-    object1.alive = false;
+    object1.nextAlive = false;
   }
+  return object1;
 }
+
+function recreateBoard() {
+  objectArray.forEach((object) => {
+    square(object.x, object.y, object.alive);
+  });
+}
+function gameLoop() {
+  //clear Canvas
+  ctx.clearRect(0, 0, width, height);
+
+  //loop through objectArray to test for Neibors
+  objectArray.forEach((object) => {
+    checkSurrounding(object);
+  });
+
+  // update objectArray
+  let count = 0;
+  for (let i = 0; i < objectArray.length; i++) {
+    this.objectArray[i].alive = this.objectArray[i].nextAlive;
+    if (this.objectArray[i].nextAlive) {
+      count++;
+    }
+  }
+  //and redraw
+  recreateBoard();
+
+  //recall gameLoop function with setTimeout + Conditional
+  setTimeout(() => {
+    if (count <= objectArray.length * 0.5) {
+      gameLoop();
+    }
+  }, 1000);
+}
+
+document.querySelector("canvas").addEventListener("click", gameLoop);
