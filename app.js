@@ -1,19 +1,18 @@
 //x is horizontal y is vertical
 
-// let height = (document.querySelector("canvas").height = innerHeight);
-// let width = (document.querySelector("canvas").width = innerWidth);
-let height = 500;
-let width = 500;
+let height = (document.querySelector("canvas").height = innerHeight);
+let width = (document.querySelector("canvas").width = innerWidth);
 
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
 let objectArray = [];
+let testArray = [];
 
 function Cell(x, y, alive) {
   this.x = x;
   this.y = y;
   this.alive = alive === 1 ? true : false;
-  this.nextAlive = false;
+  this.nextAlive = alive;
 }
 
 function createBoard() {
@@ -101,10 +100,16 @@ function checkSurrounding(object1) {
       }
     }
   });
-  if (numAlive === 2 || numAlive === 3) {
-    object1.alive = true;
-  }  else {
-    object1.alive = false;
+  if (numAlive === 2) {
+    //keeps current state
+    object1.alive = object1.nextAlive;
+  }
+  if (numAlive === 3) {
+    //becomes alive
+    object1.nextAlive = true;
+  } else {
+    //all else die from under or over population
+    object1.nextAlive = false;
   }
 }
 
@@ -113,20 +118,25 @@ function recreateBoard() {
     square(object.x, object.y, object.alive);
   });
 }
+
 function gameLoop() {
+  let count = 0;
+  //loop through objectArray to test for Neibours in reverse
+  objectArray.forEach((object) => {
+    checkSurrounding(object);
+  });
   //loop through objectArray to test for Neibours
   objectArray.forEach((object) => {
     checkSurrounding(object);
   });
 
-  // update objectArray
-  // let count = 0;
-  // for (let i = 0; i < objectArray.length; i++) {
-  //   objectArray[i].alive = objectArray[i].nextAlive;
-  //   if (objectArray[i].nextAlive) {
-  //     count++;
-  //   }
-  // }
+  //update objectArray with nextAlive for next generation.
+  for (let i = 0; i < objectArray.length; i++) {
+    objectArray[i].alive = objectArray[i].nextAlive;
+    if (objectArray[i].nextAlive) {
+      count++;
+    }
+  }
 
   //clear Canvas
   ctx.clearRect(0, 0, width, height);
@@ -135,9 +145,13 @@ function gameLoop() {
   recreateBoard();
 
   //recall gameLoop function with setTimeout + Conditional 50% DEAD CELLS
+  if (count < objectArray.length * 0.8) {
   setTimeout(() => {
-    window.requestAnimationFrame(gameLoop);
-}, 50);
-console.log('tick');
+  }, 100);
+  window.requestAnimationFrame(gameLoop);
 }
-document.querySelector("canvas").addEventListener("click", ()=>{window.requestAnimationFrame(gameLoop)});
+  console.log("tick", count, objectArray.length);
+}
+document.querySelector("canvas").addEventListener("click", () => {
+  window.requestAnimationFrame(gameLoop);
+});
