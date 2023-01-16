@@ -38,6 +38,7 @@ if (objectArray.length <= 1) {
 function square(x, y, alive) {
   ctx.fillRect(x, y, 5, 5);
   ctx.fillStyle = alive ? "black" : "white";
+  ctx.fill();
   ctx.stroke();
 }
 
@@ -100,11 +101,11 @@ function checkSurrounding(object1) {
       }
     }
   });
-  if (numAlive === 2) {
+  if (object1.alive && numAlive === 2) {
     //keeps current state
     object1.alive = object1.nextAlive;
   }
-  if (numAlive === 3) {
+  if (object1.alive && numAlive === 3) {
     //becomes alive
     object1.nextAlive = true;
   } else {
