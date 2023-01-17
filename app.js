@@ -6,7 +6,6 @@ let height = (c.height = 800);
 let width = (c.width = 800);
 
 let objectArray = [];
-let testArray = [];
 
 function Cell(x, y, alive) {
   this.x = x;
@@ -38,7 +37,6 @@ if (objectArray.length <= 1) {
 function square(x, y, alive) {
   ctx.fillRect(x, y, resolution, resolution);
   ctx.fillStyle = alive ? "black" : "white";
-  ctx.fill();
   ctx.stroke();
 }
 
@@ -106,17 +104,9 @@ function checkSurrounding(object1) {
         numAlive++;
       }
     }
-    //check that the cell is not the cell we are testing
-    if (object1.x === object2.x && object1.y === object2.y) {
-      if (object2.alive === true) {
-        //do nothing, dont count this cell
-      }
-    }
   });
   return numAlive;
 }
-
-
 
 function gameLoop() {
   let count = 0;
@@ -124,16 +114,11 @@ function gameLoop() {
   objectArray.forEach((object) => {
     let numAlive = checkSurrounding(object);
 
-    if (numAlive < 2) {
-      object.nextAlive = false;
-    }
-    if (numAlive > 3) {
-      object.nextAlive = false;
-    }
     if (numAlive === 2) {
-      object.nextAlive = true;
-    }
-    if (numAlive === 3) {
+      //keeps current state
+      object.nextAlive = object.alive
+    } else if (numAlive === 3) {
+      //becomes alive
       object.nextAlive = true;
     } else {
       //all else die from under or over population
@@ -149,14 +134,13 @@ function gameLoop() {
     //and redraw
     square(object.x, object.y, object.alive);
   });
-  
+
   //recall gameLoop function with setTimeout + Conditional 80% DEAD CELLS
   if (count < objectArray.length * 0.8) {
     setTimeout(() => {
       window.requestAnimationFrame(gameLoop);
-    }, 500);
+    }, 100);
   }
-  console.log("tick");
 }
 document.querySelector("canvas").addEventListener("click", () => {
   window.requestAnimationFrame(gameLoop);
