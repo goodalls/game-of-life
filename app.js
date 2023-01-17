@@ -1,10 +1,10 @@
-//x is horizontal y is vertical
-
-let height = (document.querySelector("canvas").height = innerHeight);
-let width = (document.querySelector("canvas").width = innerWidth);
-
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
+
+let resolution = 10;
+let height = (c.height = 800);
+let width = (c.width = 800);
+
 let objectArray = [];
 let testArray = [];
 
@@ -25,9 +25,9 @@ function createBoard() {
       let alive = Math.floor(Math.random() * 2);
       objectArray.push(new Cell(x, y, alive));
       square(x, y, alive);
-      y += 4;
+      y += resolution - 1;
     }
-    x += 4;
+    x += resolution - 1;
   }
 }
 
@@ -36,8 +36,9 @@ if (objectArray.length <= 1) {
 }
 
 function square(x, y, alive) {
-  ctx.fillRect(x, y, 5, 5);
+  ctx.fillRect(x, y, resolution, resolution);
   ctx.fillStyle = alive ? "black" : "white";
+  ctx.fill();
   ctx.stroke();
 }
 
@@ -46,49 +47,61 @@ function checkSurrounding(object1) {
   objectArray.forEach((object2) => {
     //check surrounding 8 cells around object1
     //upper left cell
-    if (object1.x - 5 === object2.x && object1.y - 5 === object2.y) {
+    if (
+      object1.x - resolution === object2.x &&
+      object1.y - resolution === object2.y
+    ) {
       if (object2.alive === true) {
         numAlive++;
       }
     }
     //upper middle cell
-    if (object1.x === object2.x && object1.y - 5 === object2.y) {
+    if (object1.x === object2.x && object1.y - resolution === object2.y) {
       if (object2.alive === true) {
         numAlive++;
       }
     }
     //upper right cell
-    if (object1.x + 5 === object2.x && object1.y - 5 === object2.y) {
+    if (
+      object1.x + resolution === object2.x &&
+      object1.y - resolution === object2.y
+    ) {
       if (object2.alive === true) {
         numAlive++;
       }
     }
     //left of object cell
-    if (object1.x - 5 === object2.x && object1.y === object2.y) {
+    if (object1.x - resolution === object2.x && object1.y === object2.y) {
       if (object2.alive === true) {
         numAlive++;
       }
     }
     //right of object cell
-    if (object1.x + 5 === object2.x && object1.y === object2.y) {
+    if (object1.x + resolution === object2.x && object1.y === object2.y) {
       if (object2.alive === true) {
         numAlive++;
       }
     }
     //lower left cell
-    if (object1.x - 5 === object2.x && object1.y + 5 === object2.y) {
+    if (
+      object1.x - resolution === object2.x &&
+      object1.y + resolution === object2.y
+    ) {
       if (object2.alive === true) {
         numAlive++;
       }
     }
     //lower middle cell
-    if (object1.x === object2.x && object1.y + 5 === object2.y) {
+    if (object1.x === object2.x && object1.y + resolution === object2.y) {
       if (object2.alive === true) {
         numAlive++;
       }
     }
     //lower right cell
-    if (object1.x + 5 === object2.x && object1.y + 5 === object2.y) {
+    if (
+      object1.x + resolution === object2.x &&
+      object1.y + resolution === object2.y
+    ) {
       if (object2.alive === true) {
         numAlive++;
       }
@@ -100,57 +113,50 @@ function checkSurrounding(object1) {
       }
     }
   });
-  if (numAlive === 2) {
-    //keeps current state
-    object1.alive = object1.nextAlive;
-  }
-  if (numAlive === 3) {
-    //becomes alive
-    object1.nextAlive = true;
-  } else {
-    //all else die from under or over population
-    object1.nextAlive = false;
-  }
+  return numAlive;
 }
 
-function recreateBoard() {
-  objectArray.forEach((object) => {
-    square(object.x, object.y, object.alive);
-  });
-}
+
 
 function gameLoop() {
   let count = 0;
-  //loop through objectArray to test for Neibours in reverse
+  //loop through objectArray to test for Neibours apply rules
   objectArray.forEach((object) => {
-    checkSurrounding(object);
-  });
-  //loop through objectArray to test for Neibours
-  objectArray.forEach((object) => {
-    checkSurrounding(object);
-  });
+    let numAlive = checkSurrounding(object);
 
-  //update objectArray with nextAlive for next generation.
-  for (let i = 0; i < objectArray.length; i++) {
-    objectArray[i].alive = objectArray[i].nextAlive;
-    if (objectArray[i].nextAlive) {
-      count++;
+    if (numAlive < 2) {
+      object.nextAlive = false;
     }
-  }
-
+    if (numAlive > 3) {
+      object.nextAlive = false;
+    }
+    if (numAlive === 2) {
+      object.nextAlive = true;
+    }
+    if (numAlive === 3) {
+      object.nextAlive = true;
+    } else {
+      //all else die from under or over population
+      object.nextAlive = false;
+    }
+  });
   //clear Canvas
   ctx.clearRect(0, 0, width, height);
 
-  //and redraw
-  recreateBoard();
-
-  //recall gameLoop function with setTimeout + Conditional 50% DEAD CELLS
+  //update objectArray with nextAlive for next generation.
+  objectArray.forEach((object) => {
+    object.alive = object.nextAlive;
+    //and redraw
+    square(object.x, object.y, object.alive);
+  });
+  
+  //recall gameLoop function with setTimeout + Conditional 80% DEAD CELLS
   if (count < objectArray.length * 0.8) {
-  setTimeout(() => {
-  }, 100);
-  window.requestAnimationFrame(gameLoop);
-}
-  console.log("tick", count, objectArray.length);
+    setTimeout(() => {
+      window.requestAnimationFrame(gameLoop);
+    }, 500);
+  }
+  console.log("tick");
 }
 document.querySelector("canvas").addEventListener("click", () => {
   window.requestAnimationFrame(gameLoop);
