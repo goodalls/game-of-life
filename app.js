@@ -25,8 +25,9 @@ function update() {
   render(grid);
   setTimeout(() => {
     requestAnimationFrame(update);
-  }, 100);
+  }, 500);
 }
+
 function nextGen(grid) {
   //makes exact copy of grid array
   const nextGen = grid.map((arr) => [...arr]);
