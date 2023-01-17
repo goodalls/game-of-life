@@ -1,10 +1,10 @@
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
 
-let resolution = 10;
-let height = (c.height = 800);
-let width = (c.width = 800);
 
+let resolution = 10;
+let height = (c.height = innerHeight);
+let width = (c.width = innerWidth);
 let objectArray = [];
 
 function Cell(x, y, alive) {
@@ -117,9 +117,11 @@ function gameLoop() {
     if (numAlive === 2) {
       //keeps current state
       object.nextAlive = object.alive
+      count++
     } else if (numAlive === 3) {
       //becomes alive
       object.nextAlive = true;
+      count++
     } else {
       //all else die from under or over population
       object.nextAlive = false;
